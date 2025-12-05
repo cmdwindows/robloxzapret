@@ -1,5 +1,5 @@
 @echo off
-set "version_robloxzapret=robloxzapret v1.0"
+set "new_version_rz=1.1"
 
 :: External commands
 if "%~1"=="status_robloxzapret" (
@@ -28,7 +28,7 @@ if "%1"=="admin" (
 ) else (
     echo Requesting admin rights...
     powershell -Command "Start-Process 'cmd.exe' -ArgumentList '/c \"\"%~f0\" admin\"' -Verb RunAs"
-    exit /b
+    exit
 )
 
 
@@ -40,15 +40,15 @@ call :ipset_switch_status
 call :game_switch_status
 
 set "menu_choice=null"
-echo =========  !version_robloxzapret!  =========
+echo =========  robloxzapret v!new_version_rz!  =========
 echo 1. Install Service
 echo 2. Remove Services
 echo 3. Check Status
 echo 4. Run Diagnostics
 echo 5. check updates robloxzapret (beta)
-echo 6. Switch Game Filter (necessarily) (%GameFilterStatus%)
-echo 7. Switch ipset (necessarily) (%IPsetStatus%)
-echo 8. update ipset list (beta)
+echo 6. Switch Game Filter (%GameFilterStatus%)
+echo 7. Switch ipset (%IPsetStatus%)
+echo 8. update ipset list robloxzapret
 echo 0. Exit
 set /p menu_choice=Enter choice (0-8): 
 
@@ -56,10 +56,10 @@ if "%menu_choice%"=="1" goto service_install
 if "%menu_choice%"=="2" goto service_remove
 if "%menu_choice%"=="3" goto service_status
 if "%menu_choice%"=="4" goto service_diagnostics
-if "%menu_choice%"=="5" goto service_check_updates_rblxzapret
+if "%menu_choice%"=="5" goto service_check_updates_rz
 if "%menu_choice%"=="6" goto game_switch
 if "%menu_choice%"=="7" goto ipset_switch
-if "%menu_choice%"=="8" goto ipset_updates_rblxzapret
+if "%menu_choice%"=="8" goto ipset_update_rz
 if "%menu_choice%"=="0" exit /b
 goto menu
 
@@ -188,7 +188,7 @@ if not defined selectedFile (
 )
 
 :: Args that should be followed by value
-set "args_with_value=sni"
+set "args_with_value=sni host altorder"
 
 :: Parsing args (mergeargs: 2=start param|3=arg with value|1=params args|0=default)
 set "args="
@@ -249,9 +249,9 @@ for /f "tokens=*" %%a in ('type "!selectedFile!"') do (
 
                 if "!arg:~0,2!" EQU "--" (
                     set "mergeargs=2"
-                ) else if !mergeargs!==2 (
-                    set "mergeargs=1"
-                ) else if !mergeargs!==1 (
+                ) else if !mergeargs! GEQ 1 (
+                    if !mergeargs!==2 set "mergeargs=1"
+
                     for %%x in (!args_with_value!) do (
                         if /i "%%x"=="!arg!" (
                             set "mergeargs=3"
@@ -289,8 +289,8 @@ pause
 goto menu
 
 
-:: CHECK UPDATES FOR ROBLOXZAPRET =======================
-:service_check_updates_rblxzapret
+:: CHECK UPDATES ROBLOXZAPRET =======================
+:service_check_updates_rz
 chcp 437 > nul
 cls
 
@@ -311,8 +311,8 @@ if not defined GITHUB_VERSION (
 )
 
 :: Version comparison
-if "%version_robloxrobloxzapret%"=="%GITHUB_VERSION%" (
-    echo Latest version installed: %version_robloxrobloxzapret%
+if "%new_version_rz%"=="%GITHUB_VERSION%" (
+    echo Latest version installed: %new_version_rz%
     
     if "%1"=="soft" exit 
     pause
@@ -350,6 +350,26 @@ if !errorlevel!==0 (
     call :PrintGreen "Base Filtering Engine check passed"
 ) else (
     call :PrintRed "[X] Base Filtering Engine is not running. This service is required for robloxzapret to work"
+)
+echo:
+
+:: Proxy check
+set "proxyEnabled=0"
+set "proxyServer="
+
+for /f "tokens=2*" %%A in ('reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyEnable 2^>nul ^| findstr /i "ProxyEnable"') do (
+    if "%%B"=="0x1" set "proxyEnabled=1"
+)
+
+if !proxyEnabled!==1 (
+    for /f "tokens=2*" %%A in ('reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v ProxyServer 2^>nul ^| findstr /i "ProxyServer"') do (
+        set "proxyServer=%%B"
+    )
+    
+    call :PrintYellow "[?] System proxy is enabled: !proxyServer!"
+    call :PrintYellow "Make sure it's valid or disable it if you don't use a proxy"
+) else (
+    call :PrintGreen "Proxy check passed"
 )
 echo:
 
@@ -457,7 +477,7 @@ echo:
 tasklist /FI "IMAGENAME eq winws.exe" | find /I "winws.exe" > nul
 set "winws_running=!errorlevel!"
 
-sc query WinDidvert | findstr /I "RUNNING STOP_PENDING" > nul
+sc query "WinDivert" | findstr /I "RUNNING STOP_PENDING" > nul
 set "windivert_running=!errorlevel!"
 
 if !winws_running! neq 0 if !windivert_running!==0 (
@@ -465,7 +485,8 @@ if !winws_running! neq 0 if !windivert_running!==0 (
     
     net stop "WinDivert" >nul 2>&1
     sc delete "WinDivert" >nul 2>&1
-    if !errorlevel! neq 0 (
+    sc query "WinDivert" >nul 2>&1
+    if !errorlevel!==0 (
         call :PrintRed "[X] Failed to delete WinDivert. Checking for conflicting services..."
         
         set "conflicting_services=GoodbyeDPI"
@@ -491,6 +512,7 @@ if !winws_running! neq 0 if !windivert_running!==0 (
         ) else (
             call :PrintYellow "[?] Attempting to delete WinDivert again..."
 
+            net stop "WinDivert" >nul 2>&1
             sc delete "WinDivert" >nul 2>&1
             sc query "WinDivert" >nul 2>&1
             if !errorlevel! neq 0 (
@@ -508,6 +530,8 @@ if !winws_running! neq 0 if !windivert_running!==0 (
 
 :: Conflicting bypasses
 set "conflicting_services=GoodbyeDPI discordfix_robloxzapret winws1 winws2"
+set "found_any_conflict=0"
+set "found_conflicts="
 
 for %%s in (!conflicting_services!) do (
     sc query "%%s" >nul 2>&1
@@ -628,11 +652,18 @@ goto menu
 :ipset_switch_status
 chcp 437 > nul
 
-findstr /R "^203\.0\.113\.113/32$" "%~dp0lists\ipset-all.txt" >nul
-if !errorlevel!==0 (
-    set "IPsetStatus=empty"
+set "listFile=%~dp0lists\ipset-all.txt"
+for /f %%i in ('type "%listFile%" 2^>nul ^| find /c /v ""') do set "lineCount=%%i"
+
+if !lineCount!==0 (
+    set "IPsetStatus=any"
 ) else (
-    set "IPsetStatus=loaded"
+    findstr /R "^203\.0\.113\.113/32$" "%listFile%" >nul
+    if !errorlevel!==0 (
+        set "IPsetStatus=none"
+    ) else (
+        set "IPsetStatus=loaded"
+    )
 )
 exit /b
 
@@ -644,38 +675,47 @@ cls
 set "listFile=%~dp0lists\ipset-all.txt"
 set "backupFile=%listFile%.backup"
 
-findstr /R "^203\.0\.113\.113/32$" "%listFile%" >nul
-if !errorlevel!==0 (
-    echo Enabling ipset based bypass...
-
-    if exist "%backupFile%" (
-        del /f /q "%listFile%"
-        ren "%backupFile%" "ipset-all.txt"
-    ) else (
-        echo Error: no backup to restore. Update list from service menu by yourself
-    )
-
-) else (
-    echo Disabling ipset based bypass...
-
+if "%IPsetStatus%"=="loaded" (
+    echo Switching to none mode...
+    
     if not exist "%backupFile%" (
         ren "%listFile%" "ipset-all.txt.backup"
     ) else (
         del /f /q "%backupFile%"
         ren "%listFile%" "ipset-all.txt.backup"
     )
-
+    
     >"%listFile%" (
         echo 203.0.113.113/32
     )
+    
+) else if "%IPsetStatus%"=="none" (
+    echo Switching to any mode...
+    
+    >"%listFile%" (
+        rem Creating empty file
+    )
+    
+) else if "%IPsetStatus%"=="any" (
+    echo Switching to loaded mode...
+    
+    if exist "%backupFile%" (
+        del /f /q "%listFile%"
+        ren "%backupFile%" "ipset-all.txt"
+    ) else (
+        echo Error: no backup to restore. Update list from service menu first
+        pause
+        goto menu
+    )
+    
 )
 
 pause
 goto menu
 
 
-:: IPSET UPDATE1 =======================
-:ipset_updates_rblxzapret
+:: IPSET UPDATE ROLBOXZAPRET =======================
+:ipset_update_rz
 chcp 437 > nul
 cls
 
@@ -714,7 +754,3 @@ exit /b
 :PrintYellow
 powershell -Command "Write-Host \"%~1\" -ForegroundColor Yellow"
 exit /b
-
-
-
-:: robloxzapret by sheilt (cmdwindows)
