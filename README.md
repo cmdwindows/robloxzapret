@@ -5,7 +5,7 @@
 2) Запустите general (пробуйте любой) от имени администратора
 3) Попробуйте открыть Roblox
 
-*Связь со мной frskue@internet.ru*
+*Связь со мной frskue@internet.ru или alexandersheilt@gmail.com*
 
 ## Лицензирование
 
@@ -13,6 +13,6 @@
 
 # Благодарности
 
-[zapret-discord-youtube](https://github.com/Flowseal/zapret-discord-youtube/) - [(version  v1.8.4 hotfix 10.09)](https://github.com/Flowseal/zapret-discord-youtube/releases/tag/1.8.4)
+[zapret-discord-youtube](https://github.com/Flowseal/zapret-discord-youtube/) - [(version  v1.9.0b)](https://github.com/Flowseal/zapret-discord-youtube/releases/tag/1.9.0b)
 
 [zapretRoblox](https://github.com/tartenka/zapretRoblox)
