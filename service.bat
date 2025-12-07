@@ -1,8 +1,8 @@
 @echo off
-set "new_version_rz=1.1"
+set "LOCAL_VERSION=1.1a"
 
 :: External commands
-if "%~1"=="status_robloxzapret" (
+if "%~1"=="status_zapret" (
     call :test_service robloxzapret soft
     call :tcp_enable
     exit /b
@@ -40,14 +40,14 @@ call :ipset_switch_status
 call :game_switch_status
 
 set "menu_choice=null"
-echo =========  robloxzapret v!new_version_rz!  =========
+echo =========  robloxzapret v!LOCAL_VERSION!  =========
 echo 1. Install Service
 echo 2. Remove Services
 echo 3. Check Status
 echo 4. Run Diagnostics
 echo 5. check updates robloxzapret (beta)
-echo 6. Switch Game Filter (%GameFilterStatus%)
-echo 7. Switch ipset (%IPsetStatus%)
+echo 6. Switch Game Filter (necessarily) (%GameFilterStatus%)
+echo 7. Switch ipset (necessarily) (%IPsetStatus%)
 echo 8. update ipset list robloxzapret
 echo 0. Exit
 set /p menu_choice=Enter choice (0-8): 
@@ -56,10 +56,10 @@ if "%menu_choice%"=="1" goto service_install
 if "%menu_choice%"=="2" goto service_remove
 if "%menu_choice%"=="3" goto service_status
 if "%menu_choice%"=="4" goto service_diagnostics
-if "%menu_choice%"=="5" goto service_check_updates_rz
+if "%menu_choice%"=="5" goto service_check_updates
 if "%menu_choice%"=="6" goto game_switch
 if "%menu_choice%"=="7" goto ipset_switch
-if "%menu_choice%"=="8" goto ipset_update_rz
+if "%menu_choice%"=="8" goto ipset_update
 if "%menu_choice%"=="0" exit /b
 goto menu
 
@@ -289,8 +289,8 @@ pause
 goto menu
 
 
-:: CHECK UPDATES ROBLOXZAPRET =======================
-:service_check_updates_rz
+:: CHECK UPDATES =======================
+:service_check_updates
 chcp 437 > nul
 cls
 
@@ -311,8 +311,8 @@ if not defined GITHUB_VERSION (
 )
 
 :: Version comparison
-if "%new_version_rz%"=="%GITHUB_VERSION%" (
-    echo Latest version installed: %new_version_rz%
+if "%LOCAL_VERSION%"=="%GITHUB_VERSION%" (
+    echo Latest version installed: %LOCAL_VERSION%
     
     if "%1"=="soft" exit 
     pause
@@ -714,15 +714,15 @@ pause
 goto menu
 
 
-:: IPSET UPDATE ROLBOXZAPRET =======================
-:ipset_update_rz
+:: IPSET UPDATE =======================
+:ipset_update
 chcp 437 > nul
 cls
 
 set "listFile=%~dp0lists\ipset-all.txt"
 set "url=https://raw.githubusercontent.com/cmdwindows/robloxzapret/refs/heads/main/.service/ipset-service.txt"
 
-echo Updating ipset-all...
+echo updating ipset-all robloxzapret...
 
 if exist "%SystemRoot%\System32\curl.exe" (
     curl -L -o "%listFile%" "%url%"
@@ -754,3 +754,6 @@ exit /b
 :PrintYellow
 powershell -Command "Write-Host \"%~1\" -ForegroundColor Yellow"
 exit /b
+
+
+:: robloxzapret by sheilt (cmdwindows), zapret-discord-youtube by Flowseal
