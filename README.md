@@ -20,4 +20,4 @@
 
 [zapret-discord-youtube](https://github.com/Flowseal/zapret-discord-youtube/) - [(version  v1.9.0b)](https://github.com/Flowseal/zapret-discord-youtube/releases/tag/1.9.0b)
 
-[zapretRoblox](https://github.com/tartenka/zapretRoblox)
+[zapretRoblox (deleted)](https://github.com/tartenka/zapretRoblox)
